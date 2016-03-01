@@ -10,32 +10,21 @@ import com.gameserver.net.Header;
 import com.gameserver.net.Message;
 
 /**
- * 对包的头文件进行解码
- * header协议格式:
- * {
- * 		tag             byte    协议头标志位
- * 		encode  		byte
- * 		encrypt  		byte
- * 		State   		byte
- * 		extend  		byte
- * 		sessionid  		string length[32]
- * 		length  		int
- * 		commandId  		int
- * }
+ * 对包的头文件进行解码 header协议格式: { tag byte 协议头标志位 encode byte encrypt byte State byte
+ * extend byte sessionid long length int commandId int }
  * 
  * @author shitg
  *
  */
 public class HeaderDecoder extends FrameDecoder {
 
-	/**头文件长度**/
-	public static final int HEAD_LENGHT = 45;
+	/** 头文件长度 **/
+	public static final int HEAD_LENGHT = 30;
 	/** 包头标志 **/
 	public static final byte PACKAGE_TAG = 0x01;
 
 	@Override
-	protected Object decode(ChannelHandlerContext ctx, Channel channel,
-			ChannelBuffer buffer) throws Exception {
+	protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer) throws Exception {
 		if (buffer.readableBytes() < HEAD_LENGHT) {
 			return null;
 		}
@@ -46,11 +35,10 @@ public class HeaderDecoder extends FrameDecoder {
 		}
 		byte encode = buffer.readByte();
 		byte encrypt = buffer.readByte();
-		byte extend1 = buffer.readByte();
-		byte extend2 = buffer.readByte();
-		byte sessionByte[] = new byte[32];
-		buffer.readBytes(sessionByte);
-		String sessionid = new String(sessionByte);
+		byte state = buffer.readByte();
+		byte type = buffer.readByte();
+		byte extend = buffer.readByte();
+		long sessionid = buffer.readLong();
 		int length = buffer.readInt();
 		int commandId = buffer.readInt();
 
@@ -59,8 +47,7 @@ public class HeaderDecoder extends FrameDecoder {
 			return null;
 		}
 
-		Header header = new Header(encode, encrypt, extend1, extend2,
-				sessionid, length, commandId);
+		Header header = new Header(encode, encrypt, state, type, extend, sessionid, length, commandId);
 		Message message = new Message(header, buffer.readBytes(length));
 
 		return message;

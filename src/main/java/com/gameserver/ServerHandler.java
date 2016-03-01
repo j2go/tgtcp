@@ -1,7 +1,8 @@
 package com.gameserver;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -11,8 +12,12 @@ import org.jboss.netty.channel.SimpleChannelHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.gameserver.aop.Interceptor;
+import com.gameserver.aop.Invocation;
 import com.gameserver.net.Header;
 import com.gameserver.net.Message;
+import com.gameserver.session.Session;
+import com.gameserver.session.SessionManager;
 import com.gameserver.util.ErrorCode;
 
 /**
@@ -25,11 +30,21 @@ public class ServerHandler extends SimpleChannelHandler {
 
 	private final static Logger logger = LoggerFactory.getLogger(ServerHandler.class);
 
-	Map<Integer, ActionInvocation> handleMap = new ConcurrentHashMap<Integer, ActionInvocation>();
+	List<Interceptor> interceptors = new LinkedList<Interceptor>();
 
 	@Override
 	public void channelConnected(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-		e.getChannel().write("连接成功");
+		Long sessionID = (Long) ctx.getAttachment();
+		if (sessionID == null) {
+			sessionID = SessionManager.me.generateSessionId();
+			Session session = new Session();
+			session.setSessionId(sessionID);
+			// TODO 处理 IP
+			session.setChannel(e.getChannel());
+			ctx.setAttachment(sessionID);
+			SessionManager.me.put(session);
+			logger.info("#new sessionId:{}#connect.", sessionID);
+		}
 	}
 
 	@Override
@@ -49,16 +64,9 @@ public class ServerHandler extends SimpleChannelHandler {
 	private Message processRequest(Message request) {
 		int cmdId = getCommandId(request);
 		Message response = new Message(getResponseHeader(request, cmdId));
-		try {
-			ActionInvocation ai = handleMap.get(cmdId);
-			if (ai == null) {
-				setErrorMsg(-1, ErrorCode.CMD_OBJ_NOT_EXIT, response);
-			}
-			ai.execute(request, response);
-		} catch (Exception ex) {
-			setErrorMsg(-1, ErrorCode.SERVER_ERROR, response);
-			logger.error("processRequest异常", ex);
-		}
+		Iterator<Interceptor> iterator = interceptors.iterator();
+
+		new Invocation(cmdId, request, response, iterator).invoke();
 		return response;
 	}
 
@@ -104,7 +112,7 @@ public class ServerHandler extends SimpleChannelHandler {
 
 	@Override
 	public void channelClosed(ChannelHandlerContext ctx, ChannelStateEvent e) throws Exception {
-		logger.info("连接已关闭" + e.getChannel());
+		logger.info("#sessionId:{}#connection closed#{}", ctx.getAttachment(), e.getChannel());
 	}
 
 	@Override

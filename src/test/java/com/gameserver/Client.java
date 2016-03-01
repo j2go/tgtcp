@@ -21,19 +21,17 @@ public class Client {
 
 	public static void main(String[] args) {
 		ClientBootstrap cbApp = new ClientBootstrap(
-				new NioClientSocketChannelFactory(
-						Executors.newCachedThreadPool(),
-						Executors.newCachedThreadPool()));
+				new NioClientSocketChannelFactory(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
 		final ClientHandler handler = new ClientHandler();
 		final ExtensionRegistry registry = ExtensionRegistry.newInstance();
 		Protocol.registerAllExtensions(registry);
 
 		cbApp.setPipelineFactory(new ChannelPipelineFactory() {
+
 			public ChannelPipeline getPipeline() {
 				ChannelPipeline pipeline = Channels.pipeline();
 				pipeline.addLast("decoder", new HeaderDecoder());
-				pipeline.addLast("pDecoder", new ProtobufDecoder(
-						Protocol.Request.getDefaultInstance(), registry));
+				pipeline.addLast("pDecoder", new ProtobufDecoder(Protocol.Request.getDefaultInstance(), registry));
 
 				pipeline.addLast("hEncoder", new HeaderEncoder());
 				pipeline.addLast("pEncoder", new ProtobufEncoder());
@@ -41,8 +39,7 @@ public class Client {
 				return pipeline;
 			}
 		});
-		ChannelFuture future = cbApp.connect(new InetSocketAddress("localhost",
-				8081));
+		ChannelFuture future = cbApp.connect(new InetSocketAddress("localhost", 8801));
 		future.getChannel().getCloseFuture().awaitUninterruptibly();
 		cbApp.releaseExternalResources();
 	}

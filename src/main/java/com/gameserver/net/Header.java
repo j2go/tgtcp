@@ -7,16 +7,23 @@ package com.gameserver.net;
  * 
  */
 public class Header implements Cloneable {
+
 	/** 数据编码格式。已定义：0：UTF-8，1：GBK，2：GB2312，3：ISO8859-1 **/
 	private byte encode;
 	/** 加密类型。0表示不加密 **/
 	private byte encrypt;
-	/** 状态码 **/
+	/**
+	 * 状态码 0 执行失败 1 正常返回 2 推送 3 特殊显示消息 4 程序异常
+	 **/
 	private byte state;
+	/**
+	 * 消息类型 0 json 1 protobuf
+	 **/
+	private byte type;
 	/** 用于扩展协议。暂未定义任何值 **/
 	private byte extend;
 	/** 会话ID **/
-	private String sessionid;
+	private long sessionid;
 	/** 数据包长 **/
 	private int length;
 	/** 命令 **/
@@ -32,19 +39,21 @@ public class Header implements Cloneable {
 		return null;
 	}
 
-	public Header() {}
+	public Header() {
+	}
 
-	public Header(String sessionid) {
+	public Header(long sessionid) {
 		this.encode = 0;
 		this.encrypt = 0;
 		this.sessionid = sessionid;
 	}
 
-	public Header(byte encode, byte encrypt, byte state, byte extend,
-			String sessionid, int length, int commandId) {
+	public Header(byte encode, byte encrypt, byte state, byte type, byte extend, long sessionid, int length,
+			int commandId) {
 		this.encode = encode;
 		this.encrypt = encrypt;
 		this.state = state;
+		this.setType(type);
 		this.extend = extend;
 		this.sessionid = sessionid;
 		this.length = length;
@@ -83,11 +92,11 @@ public class Header implements Cloneable {
 		this.extend = extend;
 	}
 
-	public String getSessionid() {
+	public Long getSessionid() {
 		return sessionid;
 	}
 
-	public void setSessionid(String sessionid) {
+	public void setSessionid(Long sessionid) {
 		this.sessionid = sessionid;
 	}
 
@@ -109,9 +118,16 @@ public class Header implements Cloneable {
 
 	@Override
 	public String toString() {
-		return "header [encode=" + encode + ",encrypt=" + encrypt + ",extend1="
-				+ state + ",extend2=" + extend + ",sessionid=" + sessionid
-				+ ",length=" + length + ",commandId=" + commandId + "]";
+		return "header [encode=" + encode + ",encrypt=" + encrypt + ",state=" + state + ",extend2=" + extend
+				+ ",sessionid=" + sessionid + ", =" + length + ",commandId=" + commandId + "]";
+	}
+
+	public byte getType() {
+		return type;
+	}
+
+	public void setType(byte type) {
+		this.type = type;
 	}
 
 }

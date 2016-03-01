@@ -1,7 +1,7 @@
 package com.gameserver.net;
 
 public enum State {
-	FAIL(0), SUCC(1), PUSH(2), SPEC(3), EXCEPTION(4), REDIRECT(5);
+	FAIL(0), SUCC(1), PUSH(2), SPEC(3), EXCEPTION(4);
 
 	private byte value;
 

@@ -16,8 +16,7 @@ import com.gameserver.net.Message;
 public class HeaderEncoder extends OneToOneEncoder {
 
 	@Override
-	protected Object encode(ChannelHandlerContext ctx, Channel channel,
-			Object msg) throws Exception {
+	protected Object encode(ChannelHandlerContext ctx, Channel channel, Object msg) throws Exception {
 		if (!(msg instanceof Message)) {
 			return msg;
 		}
@@ -31,8 +30,9 @@ public class HeaderEncoder extends OneToOneEncoder {
 		allBuffer.writeByte(header.getEncode());
 		allBuffer.writeByte(header.getEncrypt());
 		allBuffer.writeByte(header.getState());
+		allBuffer.writeByte(header.getType());
 		allBuffer.writeByte(header.getExtend());
-		allBuffer.writeBytes(header.getSessionid().getBytes());
+		allBuffer.writeLong(header.getSessionid());
 		allBuffer.writeInt(buffer.readableBytes());
 		allBuffer.writeInt(header.getCommandId());
 		allBuffer.writeBytes(buffer);

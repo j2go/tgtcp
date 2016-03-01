@@ -22,7 +22,7 @@ public class ClientHandler extends SimpleChannelHandler {
 		builder.setExtension(Protocol.login, login);
 		Request request = builder.build();
 
-		Header header = new Header("11111111111111111111111111111111");
+		Header header = new Header(1l);
 		header.setCommandId(100);
 		Message message = new Message(header, request);
 		e.getChannel().write(message);

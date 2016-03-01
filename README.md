@@ -1,10 +1,11 @@
 #tg-tcp-framework
-### **通粗体讯协议1.0**
+### **通讯协议1.0**
 
 
 报头+内容，报头固定30字节
 
 [headTag][encode][encrypt][state][type][extend][sessionId][length][cmdId][......]
+
   byte     byte     byte    byte  byte   byte      long      int    int  {length}
 
  **headTag**: 固定值0x01

@@ -1,5 +1,6 @@
 package com.gameserver.config;
 
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.util.Properties;
 
@@ -20,7 +21,7 @@ public class ServerConfig {
 
 	public static void load() {
 		try {
-			props.load(new FileReader("conf/config.properties"));
+			props.load(new FileInputStream("conf/config.properties"));
 		} catch (Exception e) {
 			logger.error("加载配置文件异常", e);
 		}
